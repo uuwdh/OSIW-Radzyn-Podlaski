@@ -296,11 +296,15 @@
         <p>Masz propozycję wydarzenia, uwagę lub pytanie do kandydatów? Wypełnij formularz — odpowiemy jak najszybciej!</p>
       </div>
 
-      <form onsubmit="sendMessage(event)">
-        <input type="text" placeholder="IMIĘ" required>
-        <input type="text" placeholder="NAZWISKO">
-        <textarea placeholder="TWOJA WIADOMOŚĆ / POMYSŁ" rows="6" required></textarea>
-        <button class="btn gradient" type="submit">WYŚLIJ WIADOMOŚĆ</button>
+      <form id="contactForm" action="https://formspree.io/f/mbgjpeva" method="POST" onsubmit="handleFormSubmit(event)">
+        <input type="text" name="name" placeholder="IMIĘ I NAZWISKO" required>
+        <input type="email" name="email" placeholder="TWOJ E-MAIL" required>
+        <textarea name="message" placeholder="TWOJA WIADOMOŚĆ / POMYSŁ" rows="6" required></textarea>
+        <button class="btn gradient" type="submit" id="submitBtn">WYŚLIJ WIADOMOŚĆ</button>
+        
+        <p id="formStatus" style="display:none; color: #a1cb00; font-weight: bold; margin-top: 15px; font-size: 1rem;">
+          Dziękujemy za wiadomość! Twój pomysł został wysłany.
+        </p>
       </form>
     </div>
   </section>
@@ -309,7 +313,7 @@
 
 <footer>
   <div class="footer-logo">
-    <img src="images/LOGO.png" alt="Logo OSIW">
+    <img src="img/LOGO.png" alt="Logo OSIW">
     <strong>RADA MŁODZIEŻY OSIW RADZYŃ PODLASKI</strong>
   </div>
   <p>Jedność · Rozwój · Działanie</p>
@@ -317,9 +321,46 @@
 </footer>
 
 <script>
-function sendMessage(event) {
+async function handleFormSubmit(event) {
   event.preventDefault();
-  alert("Dziękujemy za wiadomość! Twoja opinia jest dla nas ważna.");
+  const form = event.target;
+  const status = document.getElementById("formStatus");
+  const btn = document.getElementById("submitBtn");
+  const data = new FormData(form);
+
+  btn.disabled = true;
+  btn.innerText = "WYSYŁANIE...";
+
+  try {
+    const response = await fetch(form.action, {
+      method: form.method,
+      body: data,
+      headers: {
+        'Accept': 'application/json'
+      }
+    });
+    
+    if (response.ok) {
+      status.style.display = "block";
+      status.style.color = "#a1cb00";
+      status.innerText = "Dziękujemy za wiadomość! Twoja opinia jest dla nas ważna.";
+      form.reset();
+    } else {
+      status.style.display = "block";
+      status.style.color = "#ff4d4d";
+      status.innerText = "Coś poszło nie tak. Spróbuj ponownie!";
+    }
+  } catch (error) {
+    status.style.display = "block";
+    status.style.color = "#ff4d4d";
+    status.innerText = "Błąd połączenia. Spróbuj ponownie!";
+  } finally {
+    btn.disabled = false;
+    btn.innerText = "WYŚLIJ WIADOMOŚĆ";
+    setTimeout(() => {
+      status.style.display = "none";
+    }, 6000);
+  }
 }
 </script>
 
